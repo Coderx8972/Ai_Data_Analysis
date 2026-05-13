@@ -1,5 +1,5 @@
 from sqlalchemy.orm import DeclarativeBase,Mapped, mapped_column, relationship
-from sqlalchemy import String, ForeignKey, DateTime
+from sqlalchemy import String, ForeignKey
 from datetime import datetime, UTC
 
 # Base class for models
@@ -29,5 +29,5 @@ class Transaction(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     student_id : Mapped[int] = mapped_column(ForeignKey("students.id"))
     book_id: Mapped[int] = mapped_column(ForeignKey("books.id"))
-    borrow_date: Mapped[DateTime] = mapped_column(default=datetime.now(UTC))
-    return_date: Mapped[DateTime] = mapped_column(nullable=True)
+    borrow_date: Mapped[datetime] = mapped_column(default=datetime.now(UTC))
+    return_date: Mapped[datetime] = mapped_column(nullable=True)
