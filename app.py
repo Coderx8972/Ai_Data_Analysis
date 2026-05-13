@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from database import SessionLocal, init_db
 from models import Student, Books, Transaction
-from datetime import datetime,timedelta
+from datetime import datetime,timedelta, UTC
 
 app = Flask(__name__)
 
@@ -22,9 +22,31 @@ def borrow_book():
     session = SessionLocal()
 
     try:
+        student = session.query(Student).filter_by(
+            id = data["student_id"]
+        ).first()
+        if not student:
+            return jsonify({
+                "error":"Student not found"
+            })
+
+        book = session.query(Books).filter_by(
+            id = data["book_id"]
+        ).first()
+        if not book:
+            return jsonify({
+                "error":"Book Not Found"
+            }),404
+        if book.available_books <=0:
+            return jsonify({
+                "error":"No Copies Available"
+            }),400
+        book.available_books-=1
+
         new_loan = Transaction(
             student_id=data["student_id"],
-            book_id=data["book_id"]
+            book_id=data["book_id"],
+            return_date = datetime.now(UTC)+timedelta(days=10)
         )
         session.add(new_loan)
         session.commit()
