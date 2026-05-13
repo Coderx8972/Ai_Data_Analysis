@@ -9,10 +9,6 @@ app = Flask(__name__)
 with app.app_context():
     init_db()
 
-@app.teardown_appcontext
-def shutdown_session(exception=None): # closes the session after each request
-    session = SessionLocal()
-    session.close()
 
 # --- Routes ---
 
@@ -38,6 +34,90 @@ def borrow_book():
         return jsonify({"error":str(e)}),400
     finally:
         session.close()
+
+@app.route("/books",methods=['GET','POST'])
+def books():
+    if request.method == 'POST':
+        data = request.json
+        session = SessionLocal()
+        try:
+            new_book = Books(
+                title=data["title"],
+                author=data["author"],
+                total_books=data["total_books"],
+                available_books = data["available_books"]
+            )
+            session.add(new_book)
+            session.commit()
+
+            return jsonify({
+                "message":f"Book '{new_book.title}' added !",
+                "id":new_book.id
+            }), 201
+        except Exception as e:
+            session.rollback()
+            return jsonify({"error":str(e)}),400
+        finally:
+            session.close()
+    else:
+        session = SessionLocal()
+        try:
+            books=session.query(Books).all()
+            output=[
+                {
+                    "id": b.id,
+                    "title": b.title,
+                    "author": b.author,
+                    "total_books": b.total_books,
+                    "available_books": b.available_books
+                }
+                for b in books
+            ]
+
+            return jsonify(output)
+        finally:
+            session.close()
+
+
+@app.route("/students",methods=['GET','POST'])
+def student():
+    if request.method == 'POST':
+        data = request.json
+        session = SessionLocal()
+        try:
+            new_student = Student(
+                name = data["name"],
+                email = data["email"],
+                phone_number = data['phone_number']
+            )
+            session.add(new_student)
+            session.commit()
+            return jsonify({
+                "message":f"Student '{new_student.name}' added!",
+                "id":new_student.id
+            }), 201
+        except Exception as e:
+            session.rollback()
+            return jsonify({
+                "error":str(e)
+            }), 400
+        finally:
+            session.close()
+    else:
+        session = SessionLocal()
+        students = session.query(Student).all()
+        output=[
+            {
+                "id":s.id,
+                "name":s.name,
+                "email":s.email,
+                "phone_number":s.phone_number
+            }
+            for s in students
+        ]
+        session.close()
+        return jsonify(output)
+
 
 if __name__ == "__main__":
     app.run(debug=True)

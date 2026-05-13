@@ -29,5 +29,5 @@ class Transaction(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     student_id : Mapped[int] = mapped_column(ForeignKey("students.id"))
     book_id: Mapped[int] = mapped_column(ForeignKey("books.id"))
-    borrow_date: Mapped[datetime] = mapped_column(default=datetime.now(UTC))
+    borrow_date: Mapped[datetime] = mapped_column(default=lambda:datetime.now(UTC))
     return_date: Mapped[datetime] = mapped_column(nullable=True)
